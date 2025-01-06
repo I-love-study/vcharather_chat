@@ -10,6 +10,7 @@ from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 import live2d.v3 as live2d
 from live2d.utils.lipsync import WavHandler
 
+from .sound import SoundPlayer
 
 def callback():
     print("motion end")
@@ -43,9 +44,7 @@ class Live2dWidget(QOpenGLWidget):
             self.loadPicFile(background)
 
         # 初始化播放器
-        self.player = QMediaPlayer()
-        self.audio_output = QAudioOutput()
-        self.player.setAudioOutput(self.audio_output)
+        self.player = SoundPlayer()
         self.player.playbackStateChanged.connect(self.on_mediapalyer_status_changed)
 
         # 初始化 WavHandler
@@ -102,43 +101,11 @@ class Live2dWidget(QOpenGLWidget):
         if not self.isVisible():
             return
 
-        local_x, local_y = QCursor.pos().x() - self.x(), QCursor.pos().y() - self.y()
-        if self.isInL2DArea(local_x, local_y):
-            self.isInLA = True
-        else:
-            self.isInLA = False
-
         self.update()
-
-    def isInL2DArea(self, click_x, click_y):
-        h = self.height()
-        alpha = gl.glReadPixels(click_x * self.systemScale,
-                                (h - click_y) * self.systemScale, 1, 1, gl.GL_RGBA,
-                                gl.GL_UNSIGNED_BYTE)[3]
-        return alpha > 0
-
-    def mousePressEvent(self, event: QMouseEvent) -> None:
-        x, y = event.scenePosition().x(), event.scenePosition().y()
-        # 传入鼠标点击位置的窗口坐标
-        if self.isInL2DArea(x, y):
-            self.clickInLA = True
-            self.clickX, self.clickY = x, y
-            print("pressed")
-
-    def mouseReleaseEvent(self, event):
-        x, y = event.scenePosition().x(), event.scenePosition().y()
-        # if self.isInL2DArea(x, y):
-        if self.isInLA:
-            self.model.Touch(x, y)
-            self.clickInLA = False
-            print("released")
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         x, y = event.scenePosition().x(), event.scenePosition().y()
-        if self.clickInLA:
-            ...
-            #self.move(int(self.x() + x - self.clickX), int(self.y() + y - self.clickY))
-            self.model.Drag(int(self.x() + x), int(self.y() + y))
+        self.model.Drag(int(self.x() + x), int(self.y() + y))
 
     def on_mediapalyer_status_changed(self, status):
         if status == QMediaPlayer.PlaybackState.StoppedState:
@@ -149,13 +116,8 @@ class Live2dWidget(QOpenGLWidget):
             self.model.StartMotion("Idle", 0, 2)
 
     def playSound(self, wav_file: str) -> None:
-        self.player.setSource(QUrl.fromLocalFile(wav_file))
-        self.wav_file = wav_file
-        self.audio_output.setVolume(50)
-
-        # 启动 WavHandler 分析音频
+        self.player.play_file(wav_file)
         self.wav_handler.Start(wav_file)
-        self.player.play()
 
     def motion(self, emoji: str):
         emoji_dict = {
