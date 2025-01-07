@@ -1,13 +1,21 @@
-from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
-                               QPlainTextEdit, QLabel, QPushButton, QMessageBox)
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QKeyEvent
-from appbuilder import AsyncAppBuilderClient
+import random
+from pathlib import Path
 from typing import Callable
 
-from .client import Chat, TTS
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QKeyEvent
+from PySide6.QtWidgets import (
+    QHBoxLayout,
+    QLabel,
+    QMessageBox,
+    QPlainTextEdit,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
+
+from .client import TTS, Chat
 from .live2dwidget import Live2dWidget
-import random
 
 
 class CustomPlainTextEdit(QPlainTextEdit):
@@ -53,18 +61,13 @@ class InputDialog(QWidget):
         self.tts.result_signal.connect(self.tts_callback)
 
         self.live2d: Live2dWidget = parent.live2d
+        
+        qss_file = Path(__file__).parent / "dialog.qss"
+        self.setStyleSheet(qss_file.read_text("UTF-8"))
 
     def init_ui(self):
         # 设置窗口无边框和透明背景
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-
-        # 设置窗口样式（背景为半透明青色，圆角）
-        self.setStyleSheet("""
-            QWidget {
-                /*background-color: rgba(0, 255, 255, 150);   半透明青色 */
-                border-radius: 20px;  /* 圆角 */
-            }
-            """)
 
         # 垂直布局
         vbox = QVBoxLayout()
@@ -73,68 +76,21 @@ class InputDialog(QWidget):
         # 添加对话角色标签
         self.role_label = QLabel("Player:")
         self.role_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.role_label.setStyleSheet("""
-            QLabel {
-                color: black;
-                font-size: 18px;
-                font-weight: bold;
-            }
-            """)
         vbox.addWidget(self.role_label)
 
         # 输入框（透明背景）
         self.input_field = CustomPlainTextEdit()
         self.input_field.setPlaceholderText("请输入内容...")
-        self.input_field.setStyleSheet("""
-            QPlainTextEdit {
-                background-color: rgba(0, 255, 255, 50);  /* 完全透明 */
-                border: 2px solid rgba(255, 255, 255, 50); /* 半透明边框 */
-                border-radius: 10px;  /* 圆角 */
-                padding: 5px;
-                font-family: 'Source Han Sans', sans-serif;
-                color: white;  /* 输入文字颜色 */
-                font-size: 16px;
-            }
-            QPlainTextEdit:focus {
-                border: 2px solid rgba(0, 255, 255, 200); /* 聚焦时边框颜色 */
-            }
-            """)
         self.input_field.send_message_signal = self.send_message  # 绑定发送消息的回调
         vbox.addWidget(self.input_field)
 
         button_layout = QHBoxLayout()
 
         self.action_button = QPushButton("发送")
-        self.action_button.setStyleSheet("""
-            QPushButton {
-                background-color: rgba(0, 255, 255, 200); /* 青色 */
-                border: none;
-                border-radius: 10px;
-                padding: 5px 15px;
-                color: black;
-                font-size: 16px;
-            }
-            QPushButton:hover {
-                background-color: rgba(0, 255, 255, 255); /* 高亮 */
-            }
-            """)
         self.action_button.clicked.connect(self.toggle_action)
         button_layout.addWidget(self.action_button)
 
         self.reset_button = QPushButton("重置对话")
-        self.reset_button.setStyleSheet("""
-            QPushButton {
-                background-color: rgba(0, 255, 255, 200); /* 青色 */
-                border: none;
-                border-radius: 10px;
-                padding: 5px 15px;
-                color: black;
-                font-size: 16px;
-            }
-            QPushButton:hover {
-                background-color: rgba(0, 255, 255, 255); /* 高亮 */
-            }
-            """)
         self.reset_button.clicked.connect(self.reset_conversation)
         button_layout.addWidget(self.reset_button)
         vbox.addLayout(button_layout)
