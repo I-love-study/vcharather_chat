@@ -28,8 +28,8 @@ class Chat(QThread):
             ret = self.client.run(self.conversation_id, self.text)
             assert ret.content is not None
             self.result_signal.emit(ret.content.answer)
-        except Exception as e:
-            self.result_signal.emit('Error: ' + str(e))
+        except:
+            self.result_signal.emit(f"抱歉，好像出现了什么问题，你可不可以等一下。")
 
 
 class TTS(QThread):
