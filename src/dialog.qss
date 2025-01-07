@@ -1,0 +1,32 @@
+QWidget {
+    /*background-color: rgba(0, 255, 255, 150);   半透明青色 */
+    border-radius: 20px;  /* 圆角 */
+}
+QLabel {
+    color: black;
+    font-size: 18px;
+    font-weight: bold;
+}
+QPlainTextEdit {
+    background-color: rgba(0, 255, 255, 50);  /* 完全透明 */
+    border: 2px solid rgba(255, 255, 255, 50); /* 半透明边框 */
+    border-radius: 10px;  /* 圆角 */
+    padding: 5px;
+    font-family: 'Source Han Sans', sans-serif;
+    color: white;  /* 输入文字颜色 */
+    font-size: 16px;
+}
+QPlainTextEdit:focus {
+    border: 2px solid rgba(0, 255, 255, 200); /* 聚焦时边框颜色 */
+}
+QPushButton {
+    background-color: rgba(0, 255, 255, 200); /* 青色 */
+    border: none;
+    border-radius: 10px;
+    padding: 5px 15px;
+    color: black;
+    font-size: 16px;
+}
+QPushButton:hover {
+    background-color: rgba(0, 255, 255, 255); /* 高亮 */
+}
