@@ -112,7 +112,7 @@ class InputDialog(QWidget):
         player_message = self.input_field.toPlainText().strip()
         if player_message:
             self.input_field.setPlainText(f"少女思考中...\n{player_message}")
-            self.input_field.setDisabled(True)
+            self.input_field.setReadOnly(True)
             self.chat.setText(player_message)
             self.chat.start()
 
@@ -146,7 +146,7 @@ class InputDialog(QWidget):
         """继续对话并切换回 Player"""
         # 清空输入框并解锁
         self.input_field.clear()
-        self.input_field.setDisabled(False)
+        self.input_field.setReadOnly(False)
         if self.live2d.player.isPlaying():
             self.live2d.player.stop()
 
@@ -164,3 +164,4 @@ class InputDialog(QWidget):
             self.chat.reset_conversation_id()
             self.conversation_callback(random.choice(["好吧，让我们聊点别的", "没事，让我们重新开始"]))
             self.input_field.clear()
+            self.input_field.setReadOnly(False)
