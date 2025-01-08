@@ -5,8 +5,13 @@ description = "Chat with virtual character"
 authors = [
     {name = "I Love Study", email = "ilstudy@qq.com"},
 ]
-dependencies = ["PySide6-Fluent-Widgets>=1.7.4", "PySide6>=6.8.1, !=6.8.1.1", "live2d-py>=0.3.0"]
-requires-python = ">=3.11"
+dependencies = [
+    "PySide6-Fluent-Widgets>=1.7.4",
+    "PySide6>=6.8.1, !=6.8.1.1",
+    "live2d-py>=0.3.0",
+    "darkdetect>=0.8.0"
+]
+requires-python = ">=3.11,<3.13"
 readme = "README.md"
 license = {text = "LGPL-3.0"}
 

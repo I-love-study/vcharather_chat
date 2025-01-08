@@ -1,3 +1,4 @@
+import os
 import random
 from pathlib import Path
 from typing import Callable
@@ -16,6 +17,7 @@ from PySide6.QtWidgets import (
 
 from .client import TTS, Chat
 from .live2dwidget import Live2dWidget
+from .chat_window import ChatWindow
 
 
 class CustomPlainTextEdit(QPlainTextEdit):
@@ -51,16 +53,22 @@ class CustomPlainTextEdit(QPlainTextEdit):
 
 class InputDialog(QWidget):
 
-    def __init__(self, parent):
+    def __init__(self, parent, app_id = None):
         super().__init__(parent)
         self.init_ui()
 
-        self.chat = Chat(app_id="f465fd78-aa59-4011-af81-2192a46038f2")
+        try:
+            if app_id is None:
+                app_id = os.environ["APPBUILDER_APP_ID"]
+        except:
+            raise ValueError("Cannot get app id")
+        self.chat = Chat(app_id=app_id)
         self.chat.result_signal.connect(self.conversation_callback)
         self.tts = TTS(app_id="f465fd78-aa59-4011-af81-2192a46038f2")
         self.tts.result_signal.connect(self.tts_callback)
 
         self.live2d: Live2dWidget = parent.live2d
+        self.chatwindow: ChatWindow = parent.chatwindow
         
         qss_file = Path(__file__).parent / "dialog.qss"
         self.setStyleSheet(qss_file.read_text("UTF-8"))
@@ -116,6 +124,8 @@ class InputDialog(QWidget):
             self.chat.setText(player_message)
             self.chat.start()
 
+            self.chatwindow.addMessage(player_message, isMe=True)
+
             self.action_button.setText("继续对话")
             self.is_player_turn = False
 
@@ -128,14 +138,19 @@ class InputDialog(QWidget):
         self.tts.start()
 
         if last in "🙂😄🤯😟😳💃😕":
-            self.input_field.setPlainText(ret.strip()[:-1])
+            text = ret.strip()[:-1]
             self.live2d.motion(last)
         elif last in "123":
             if ret.strip()[-2] in "🙂😄🤯😟😳💃😕":
-                self.input_field.setPlainText(ret.strip()[:-2])
+                text = ret.strip()[:-2]
                 self.live2d.motion(ret.strip()[-2])
+            else:
+                text = ret.strip()
         else:
-            self.input_field.setPlainText(ret)
+            text = ret.strip()
+
+        self.chatwindow.addMessage(ret, isMe=False)
+        self.input_field.setPlainText(text)
 
     def tts_callback(self, ret):
         if not ret:
@@ -165,3 +180,4 @@ class InputDialog(QWidget):
             self.conversation_callback(random.choice(["好吧，让我们聊点别的", "没事，让我们重新开始"]))
             self.input_field.clear()
             self.input_field.setReadOnly(False)
+            self.chatwindow.clearMessage()
